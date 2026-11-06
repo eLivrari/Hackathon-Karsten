@@ -12,6 +12,7 @@ import { exportarExcel } from './exportacao/excel'
 import { lerArquivo, lerConteudoTexto } from './ingestao'
 import { itemDaTela, type Tela } from './navegacao'
 import { carregarEstado, salvarEstado } from './persistencia/armazenamento'
+import { useTema } from './persistencia/tema'
 import { TelaAnalise } from './telas/TelaAnalise'
 import { TelaCadastros } from './telas/TelaCadastros'
 import { TelaFicha } from './telas/TelaFicha'
@@ -24,6 +25,7 @@ function App() {
   const [cadastros, setCadastros] = useState<Cadastros>(salvoInicial.cadastros ?? CADASTRO_PADRAO)
   const [demanda, setDemanda] = useState<Demanda>(salvoInicial.demanda ?? DEMANDA_EXEMPLO)
   const [salvo, setSalvo] = useState(true)
+  const { tema, alternar: alternarTema } = useTema()
 
   const [tela, setTela] = useState<Tela>('operacao')
   const [arquivo, setArquivo] = useState('')
@@ -113,7 +115,7 @@ function App() {
       <BarraLateral tela={tela} onTrocarTela={trocarTela} />
 
       <main className="main-area">
-        <BarraSuperior titulo={itemAtual.label} salvo={salvo} />
+        <BarraSuperior titulo={itemAtual.label} salvo={salvo} tema={tema} onAlternarTema={alternarTema} />
 
         <div className="page-content">
           <CabecalhoPagina

@@ -1,9 +1,15 @@
+import type { Tema } from '../persistencia/tema'
+
 interface Props {
   titulo: string
   salvo: boolean
+  tema: Tema
+  onAlternarTema: () => void
 }
 
-export function BarraSuperior({ titulo, salvo }: Props) {
+export function BarraSuperior({ titulo, salvo, tema, onAlternarTema }: Props) {
+  const proximo = tema === 'claro' ? 'escuro' : 'claro'
+
   return (
     <header className="topbar">
       <div className="breadcrumb">
@@ -19,6 +25,14 @@ export function BarraSuperior({ titulo, salvo }: Props) {
             <i /> Não foi possível salvar neste navegador
           </span>
         )}
+        <button
+          className="help-button"
+          onClick={onAlternarTema}
+          title={`Mudar para o modo ${proximo}`}
+          aria-label={`Mudar para o modo ${proximo}`}
+        >
+          {tema === 'claro' ? '☾' : '☀'}
+        </button>
         <button className="help-button" title="Ajuda">
           ?
         </button>

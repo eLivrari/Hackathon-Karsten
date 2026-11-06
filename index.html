@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Auto-T&amp;M · Processo Operacional</title>
+    <script>
+      // aplica o tema antes de desenhar a página (ver src/persistencia/tema.ts)
+      try {
+        const tema = localStorage.getItem('auto-tm-karsten:tema')
+        const escuro = tema ? tema === 'escuro' : matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.dataset.tema = escuro ? 'escuro' : 'claro'
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
