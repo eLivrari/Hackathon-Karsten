@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { Aviso } from './componentes/Aviso'
-import { BarraLateral } from './componentes/BarraLateral'
-import { BarraSuperior } from './componentes/BarraSuperior'
+import { BarraTopo } from './componentes/BarraTopo'
 import { CabecalhoPagina } from './componentes/CabecalhoPagina'
-import { Rodape } from './componentes/Rodape'
 import { CADASTRO_PADRAO, DEMANDA_EXEMPLO, DEMANDA_VAZIA } from './dominio/cadastroPadrao'
 import { gerarFicha, simularMaquinas } from './dominio/calculo'
 import type { Cadastros, Demanda } from './dominio/tipos'
@@ -111,73 +109,62 @@ function App() {
   const itemAtual = itemDaTela(tela)
 
   return (
-    <div className="app-shell">
-      <BarraLateral tela={tela} onTrocarTela={trocarTela} />
+    <>
+      <BarraTopo tela={tela} salvo={salvo} tema={tema} onTrocarTela={trocarTela} onAlternarTema={alternarTema} />
 
-      <main className="main-area">
-        <BarraSuperior titulo={itemAtual.label} salvo={salvo} tema={tema} onAlternarTema={alternarTema} />
+      <main className="pagina">
+        <CabecalhoPagina
+          titulo={itemAtual.titulo}
+          descricao={itemAtual.descricao}
+          tituloPO={demanda.titulo}
+          revisao={demanda.revisao}
+          onExportar={tela === 'ficha' ? exportar : undefined}
+        />
 
-        <div className="page-content">
-          <CabecalhoPagina
-            titulo={itemAtual.titulo}
-            descricao={itemAtual.descricao}
-            tituloPO={demanda.titulo}
-            revisao={demanda.revisao}
-            onExportar={tela === 'ficha' ? exportar : undefined}
+        <Aviso
+          mensagem={mensagem}
+          erro={erro}
+          onFechar={() => {
+            setMensagem('')
+            setErro('')
+          }}
+        />
+        <input ref={inputArquivo} type="file" accept={FORMATOS_ACEITOS} hidden onChange={aoEscolherArquivo} />
+
+        {tela === 'operacao' && (
+          <TelaOperacao
+            demanda={demanda}
+            cadastros={cadastros}
+            ficha={ficha}
+            arquivo={arquivo}
+            onAtualizar={atualizar}
+            onSelecionarArquivo={selecionarArquivo}
+            onSoltarArquivo={(file) => void importar(file)}
+            onLerTexto={lerTexto}
+            onNovaOperacao={() => {
+              setDemanda(structuredClone(DEMANDA_VAZIA))
+              avisar('Nova operação iniciada.')
+            }}
+            onGerarFicha={() => trocarTela('ficha')}
+            onConsultarCadastros={() => trocarTela('cadastros')}
           />
-
-          <Aviso
-            mensagem={mensagem}
-            erro={erro}
-            onFechar={() => {
-              setMensagem('')
-              setErro('')
+        )}
+        {tela === 'ficha' && (
+          <TelaFicha ficha={ficha} onEditar={() => trocarTela('operacao')} onAnalisar={() => trocarTela('analise')} />
+        )}
+        {tela === 'analise' && <TelaAnalise comparativo={comparativo} ficha={ficha} />}
+        {tela === 'cadastros' && (
+          <TelaCadastros
+            cadastros={cadastros}
+            onImportar={selecionarArquivo}
+            onRestaurarPadrao={() => {
+              setCadastros(CADASTRO_PADRAO)
+              avisar('Cadastros restaurados para a planilha de referência do kit.')
             }}
           />
-          <input ref={inputArquivo} type="file" accept={FORMATOS_ACEITOS} hidden onChange={aoEscolherArquivo} />
-
-          {tela === 'operacao' && (
-            <TelaOperacao
-              demanda={demanda}
-              cadastros={cadastros}
-              ficha={ficha}
-              arquivo={arquivo}
-              onAtualizar={atualizar}
-              onSelecionarArquivo={selecionarArquivo}
-              onSoltarArquivo={(file) => void importar(file)}
-              onLerTexto={lerTexto}
-              onNovaOperacao={() => {
-                setDemanda(structuredClone(DEMANDA_VAZIA))
-                avisar('Nova operação iniciada.')
-              }}
-              onGerarFicha={() => trocarTela('ficha')}
-              onConsultarCadastros={() => trocarTela('cadastros')}
-            />
-          )}
-          {tela === 'ficha' && (
-            <TelaFicha
-              ficha={ficha}
-              onExportar={exportar}
-              onEditar={() => trocarTela('operacao')}
-              onAnalisar={() => trocarTela('analise')}
-            />
-          )}
-          {tela === 'analise' && <TelaAnalise comparativo={comparativo} ficha={ficha} />}
-          {tela === 'cadastros' && (
-            <TelaCadastros
-              cadastros={cadastros}
-              onImportar={selecionarArquivo}
-              onRestaurarPadrao={() => {
-                setCadastros(CADASTRO_PADRAO)
-                avisar('Cadastros restaurados para a planilha de referência do kit.')
-              }}
-            />
-          )}
-
-          <Rodape />
-        </div>
+        )}
       </main>
-    </div>
+    </>
   )
 }
 

@@ -8,21 +8,18 @@ interface Props {
 
 export function CabecalhoPagina({ titulo, descricao, tituloPO, revisao, onExportar }: Props) {
   return (
-    <div className="page-heading">
+    <div className="cabecalho">
       <div>
-        <div className="eyebrow">
-          KARSTEN <span>·</span> TEMPOS E MÉTODOS
-        </div>
         <h1>{titulo}</h1>
         <p>{descricao}</p>
       </div>
-      <div className="heading-actions">
-        <span className="revision-tag">
-          {tituloPO || 'PO-NOVA'} <b>REV. {revisao || '00'}</b>
+      <div className="cabecalho-acoes">
+        <span className="po-atual">
+          {tituloPO || 'PO sem título'} · rev. {revisao || '00'}
         </span>
         {onExportar && (
-          <button className="button primary" onClick={onExportar}>
-            <span>↓</span> Exportar Excel
+          <button className="botao primario" onClick={onExportar}>
+            Exportar Excel
           </button>
         )}
       </div>

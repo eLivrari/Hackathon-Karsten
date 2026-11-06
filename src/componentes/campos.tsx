@@ -10,7 +10,7 @@ interface CampoTextoProps {
 
 export function CampoTexto({ label, value, onChange }: CampoTextoProps) {
   return (
-    <label className="field">
+    <label className="campo">
       <span>{label}</span>
       <input value={value} onChange={(e) => onChange(e.target.value)} />
     </label>
@@ -26,9 +26,9 @@ interface CampoNumeroProps {
 
 export function CampoNumero({ label, sufixo, value, onChange }: CampoNumeroProps) {
   return (
-    <label className="field">
+    <label className="campo">
       <span>{label}</span>
-      <div className="input-suffix">
+      <div className="com-sufixo">
         <input type="number" min="0" step="0.01" value={value} onChange={(e) => onChange(Number(e.target.value))} />
         <i>{sufixo}</i>
       </div>
@@ -61,10 +61,8 @@ export function CampoRoteiro({ roteiro, onChange, onConsultarElementos }: CampoR
   }, [roteiro])
 
   return (
-    <label className="field route-field">
-      <span>
-        Sequência de elementos MTM <i>Ordem de execução</i>
-      </span>
+    <label className="campo">
+      <span>Sequência de elementos MTM, na ordem de execução</span>
       <input
         value={texto}
         onChange={(e) => {
@@ -74,10 +72,10 @@ export function CampoRoteiro({ roteiro, onChange, onConsultarElementos }: CampoR
         onBlur={() => setTexto(roteiroComoTexto(roteiro))}
         placeholder="Ex.: 2.1, 1.1, 3.1 x2"
       />
-      <small className="field-hint">
-        Separe os códigos por vírgula. Use x2 para indicar frequência.{' '}
-        <button type="button" className="text-button" onClick={onConsultarElementos}>
-          Consultar elementos disponíveis →
+      <small className="dica">
+        Códigos separados por vírgula; x2 repete o elemento duas vezes.{' '}
+        <button type="button" className="link" onClick={onConsultarElementos}>
+          Ver elementos cadastrados
         </button>
       </small>
     </label>

@@ -21,9 +21,10 @@ export function EntradaDados({ arquivo, onSelecionarArquivo, onSoltarArquivo, on
   }
 
   return (
-    <div className="import-grid">
+    <section className="bloco">
+      <h2>Importar</h2>
       <div
-        className={`upload-card ${arrastando ? 'dragging' : ''}`}
+        className={arrastando ? 'soltar arrastando' : 'soltar'}
         onDragOver={(e) => {
           e.preventDefault()
           setArrastando(true)
@@ -31,42 +32,21 @@ export function EntradaDados({ arquivo, onSelecionarArquivo, onSoltarArquivo, on
         onDragLeave={() => setArrastando(false)}
         onDrop={soltar}
       >
-        <div className="upload-icon">↑</div>
-        <div className="upload-copy">
-          <b>Importar arquivo</b>
-          <p>
-            Arraste aqui ou{' '}
-            <button className="text-button" onClick={onSelecionarArquivo}>
-              selecione do computador
-            </button>
-          </p>
-          <small>Planilha de cadastros ou demanda · XLS, XLSX, ODS, TXT, CSV, JSON</small>
-        </div>
-        <button className="button secondary" onClick={onSelecionarArquivo}>
-          Selecionar arquivo
+        <button className="botao" onClick={onSelecionarArquivo}>
+          Escolher arquivo
         </button>
-        {arquivo && (
-          <div className="file-chip">
-            <span>▤</span>
-            {arquivo}
-            <b>✓</b>
-          </div>
-        )}
+        <span>ou arraste para cá. Aceita ods, xlsx, xls, txt, csv e json, com a demanda ou com os cadastros.</span>
+        {arquivo && <span className="arquivo-lido">Último arquivo: {arquivo}</span>}
       </div>
 
-      <div className="paste-card">
-        <div className="paste-title">
-          <span className="paste-icon">⌘</span>
-          <div>
-            <b>Colar dados</b>
-            <small>Use o formato chave: valor ou JSON</small>
-          </div>
-        </div>
+      <details className="colar">
+        <summary>Colar dados em texto</summary>
+        <p>Uma informação por linha no formato chave: valor, ou um JSON.</p>
         <textarea value={textoColado} onChange={(e) => setTextoColado(e.target.value)} placeholder={EXEMPLO_TEXTO} />
-        <button className="button secondary compact" onClick={() => onLerTexto(textoColado)}>
-          Ler dados <span>→</span>
+        <button className="botao" onClick={() => onLerTexto(textoColado)}>
+          Ler texto
         </button>
-      </div>
-    </div>
+      </details>
+    </section>
   )
 }

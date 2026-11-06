@@ -3,8 +3,6 @@ export type Tela = 'operacao' | 'ficha' | 'analise' | 'cadastros'
 interface ItemMenu {
   id: Tela
   label: string
-  numero: string
-  icone: string
   titulo: string
   descricao: string
 }
@@ -13,34 +11,26 @@ export const MENU: ItemMenu[] = [
   {
     id: 'operacao',
     label: 'Operação',
-    numero: '01',
-    icone: '⌁',
-    titulo: 'Nova operação',
-    descricao: 'Configure a operação e confira os parâmetros antes de calcular.',
+    titulo: 'Operação',
+    descricao: 'Dados do produto, máquina e sequência de elementos. O cálculo atualiza enquanto você digita.',
   },
   {
     id: 'ficha',
     label: 'Ficha PO',
-    numero: '02',
-    icone: '▤',
-    titulo: 'Ficha operacional',
-    descricao: 'Resumo calculado da operação, pronto para revisar e exportar.',
+    titulo: 'Ficha de processo operacional',
+    descricao: 'Confira os tempos antes de exportar para Excel.',
   },
   {
     id: 'analise',
     label: 'Análise',
-    numero: '03',
-    icone: '↗',
-    titulo: 'Análise de eficiência',
-    descricao: 'Compare o desempenho estimado entre as máquinas disponíveis.',
+    titulo: 'Comparação de máquinas',
+    descricao: 'O mesmo produto e roteiro calculados com cada máquina cadastrada.',
   },
   {
     id: 'cadastros',
     label: 'Cadastros',
-    numero: '04',
-    icone: '▦',
-    titulo: 'Base de cadastros',
-    descricao: 'Consulte os elementos MTM e os equipamentos usados nos cálculos.',
+    titulo: 'Cadastros',
+    descricao: 'Elementos MTM e máquinas usados no cálculo.',
   },
 ]
 
