@@ -1,39 +1,46 @@
 # Auto-T&M Karsten
 
-Aplicação web para apoiar o cálculo de tempos operacionais e a geração de fichas de Processo Operacional (PO).
+Calcula os tempos de uma operação de costura e gera a ficha de Processo Operacional (PO).
 
-## Requisitos
+Online: https://elivrari.github.io/Hackathon-Karsten/
 
-- Node.js 20 ou superior
-- npm
+## Equipe
 
-## Instalação e execução
+| Nome            | Papel      |
+| --------------- | ---------- |
+| Enzo Livrari    | Cálculos   |
+| Guilherme Rozzi | Exportação |
+| João Pedro      | Interface  |
+
+## Como rodar
+
+Precisa do Node 20+.
 
 ```bash
 npm install
 npm run dev
 ```
 
-O Vite exibirá o endereço local para abrir no navegador. Para gerar a versão de produção:
+Testes (o cálculo é conferido com o gabarito do kit):
 
 ```bash
-npm run build
-npm run preview
+npm test
 ```
 
-## Fluxo da aplicação
+O deploy no GitHub Pages roda sozinho a cada push na `main`.
 
-1. Em **Operação**, carregue uma planilha `.ods`, `.xlsx` ou `.xls`, um arquivo `.txt`, `.csv` ou `.json`, ou informe os dados manualmente.
-2. Confira os dados do produto, selecione a máquina e ajuste a sequência dos códigos MTM.
-3. Abra **Ficha PO** para revisar os tempos calculados e exportar a ficha em Excel.
-4. Use **Análise** para comparar a produção estimada nas máquinas cadastradas.
-5. Consulte **Cadastros** para revisar elementos MTM e parâmetros das máquinas carregados na sessão.
+## Como usar
 
-## Cálculos
+1. Em **Operação**, importe um arquivo (ods, xlsx, xls, txt, csv ou json) ou preencha os campos.
+2. Em **Ficha PO**, confira os tempos e exporte para Excel.
+3. Em **Análise**, compare as máquinas.
+4. Em **Cadastros**, veja os elementos MTM e as máquinas.
 
-- Tempo fixo = perímetro de costura (m) × tempo da máquina por metro (min/m).
-- Tempo manual = soma do tempo unitário de cada elemento MTM × sua frequência.
-- Tempo total = tempo fixo + tempo manual.
-- Produção estimada = 60 ÷ tempo total (peças/hora).
+Os dados ficam salvos no navegador.
 
-Os dados de exemplo do projeto são usados inicialmente para a demonstração. Os cadastros importados substituem os cadastros correspondentes durante a sessão atual.
+## Cálculo
+
+- Tempo fixo = perímetro (m) × tempo por metro da máquina
+- Tempo manual = soma dos elementos MTM × frequência
+- Tempo total = fixo + manual
+- Peças/hora = 60 ÷ tempo total

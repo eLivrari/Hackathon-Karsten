@@ -21,10 +21,7 @@ describe('calculo', () => {
   })
 
   it('frequencia multiplica o tempo', () => {
-    const ficha = gerarFicha(
-      { ...DEMANDA_EXEMPLO, roteiro: [{ codigo: '2.1', frequencia: 3 }] },
-      CADASTRO_PADRAO,
-    )
+    const ficha = gerarFicha({ ...DEMANDA_EXEMPLO, roteiro: [{ codigo: '2.1', frequencia: 3 }] }, CADASTRO_PADRAO)
     expect(arredondar(ficha.tempoManual)).toBe(0.45)
   })
 
