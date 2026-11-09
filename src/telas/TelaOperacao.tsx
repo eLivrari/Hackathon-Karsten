@@ -2,42 +2,57 @@ import type { Cadastros, Demanda, FichaPO } from '../dominio/tipos'
 import { minutos } from '../formato'
 import { CampoNumero, CampoRoteiro, CampoTexto } from '../componentes/campos'
 import { EntradaDados } from '../componentes/EntradaDados'
+import { ListaPOs } from '../componentes/ListaPOs'
 import { ResumoTempos } from '../componentes/ResumoTempos'
+import { Roteiro } from '../componentes/Roteiro'
 
 interface Props {
-  demanda: Demanda
+  demandas: Demanda[]
+  ativa: number
   cadastros: Cadastros
   ficha: FichaPO
-  arquivo: string
+  resumoImportacao: string[]
   onAtualizar: <K extends keyof Demanda>(campo: K, valor: Demanda[K]) => void
-  onSelecionarArquivo: () => void
-  onSoltarArquivo: (arquivo?: File) => void
+  onSelecionarArquivos: () => void
+  onSoltarArquivos: (arquivos: File[]) => void
   onLerTexto: (texto: string) => void
-  onNovaOperacao: () => void
+  onCarregarExemplo: () => void
+  onSelecionarPO: (indice: number) => void
+  onRemoverPO: (indice: number) => void
+  onNovaPO: () => void
+  onExportarTodas: () => void
   onGerarFicha: () => void
   onConsultarCadastros: () => void
 }
 
 export function TelaOperacao(props: Props) {
-  const { demanda, cadastros, ficha, onAtualizar } = props
+  const { cadastros, ficha, onAtualizar } = props
+  const demanda = ficha.demanda
+  const maquinaCadastrada = cadastros.maquinas.some((m) => m.codigo === demanda.codigoMaquina)
 
   return (
     <div className="duas-colunas">
       <div>
         <EntradaDados
-          arquivo={props.arquivo}
-          onSelecionarArquivo={props.onSelecionarArquivo}
-          onSoltarArquivo={props.onSoltarArquivo}
+          resumoImportacao={props.resumoImportacao}
+          onSelecionarArquivos={props.onSelecionarArquivos}
+          onSoltarArquivos={props.onSoltarArquivos}
           onLerTexto={props.onLerTexto}
+          onCarregarExemplo={props.onCarregarExemplo}
+        />
+
+        <ListaPOs
+          demandas={props.demandas}
+          cadastros={cadastros}
+          ativa={props.ativa}
+          onSelecionar={props.onSelecionarPO}
+          onRemover={props.onRemoverPO}
+          onNova={props.onNovaPO}
+          onExportarTodas={props.onExportarTodas}
         />
 
         <section className="bloco">
-          <div className="bloco-titulo">
-            <h2>Produto</h2>
-            <button className="link" onClick={props.onNovaOperacao}>
-              Limpar e começar outra
-            </button>
-          </div>
+          <h2>Produto · {demanda.titulo || 'PO sem título'}</h2>
           <div className="grade grade-4">
             <CampoTexto label="Título da PO" value={demanda.titulo} onChange={(v) => onAtualizar('titulo', v)} />
             <CampoTexto label="Revisão" value={demanda.revisao} onChange={(v) => onAtualizar('revisao', v)} />
@@ -76,12 +91,24 @@ export function TelaOperacao(props: Props) {
                   {m.codigo} · {m.tipo} — {m.modelo}
                 </option>
               ))}
+              {!maquinaCadastrada && (
+                <option value={demanda.codigoMaquina}>{demanda.codigoMaquina} · não cadastrada</option>
+              )}
             </select>
             <small className="dica num">
               {ficha.rpm.padrao.toLocaleString('pt-BR')} rpm · {minutos(ficha.maquina?.tempoPorMetro ?? 0, 4)} min por
               metro
             </small>
           </label>
+
+          <div className="campo">
+            <span>Sequência de elementos MTM</span>
+            <Roteiro
+              roteiro={demanda.roteiro}
+              elementos={cadastros.elementos}
+              onChange={(roteiro) => onAtualizar('roteiro', roteiro)}
+            />
+          </div>
           <CampoRoteiro
             roteiro={demanda.roteiro}
             onChange={(roteiro) => onAtualizar('roteiro', roteiro)}

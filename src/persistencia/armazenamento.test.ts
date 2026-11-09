@@ -26,10 +26,20 @@ describe('persistência no navegador', () => {
     expect(carregarEstado()).toEqual({})
   })
 
-  it('recupera exatamente o que foi salvo', () => {
-    const demanda = { ...DEMANDA_EXEMPLO, titulo: 'PO-TESTE', perimetro: 3.5 }
-    expect(salvarEstado({ cadastros: CADASTRO_PADRAO, demanda })).toBe(true)
-    expect(carregarEstado()).toEqual({ cadastros: CADASTRO_PADRAO, demanda })
+  it('recupera exatamente o que foi salvo, com várias POs', () => {
+    const pos = { demandas: [DEMANDA_EXEMPLO, { ...DEMANDA_EXEMPLO, titulo: 'PO-TESTE', perimetro: 3.5 }], ativa: 1 }
+    expect(salvarEstado({ cadastros: CADASTRO_PADRAO, pos })).toBe(true)
+    expect(carregarEstado()).toEqual({ cadastros: CADASTRO_PADRAO, pos })
+  })
+
+  it('aproveita o formato antigo, de uma PO só', () => {
+    localStorage.setItem('auto-tm-karsten:v1', JSON.stringify({ cadastros: CADASTRO_PADRAO, demanda: DEMANDA_EXEMPLO }))
+    expect(carregarEstado().pos).toEqual({ demandas: [DEMANDA_EXEMPLO], ativa: 0 })
+  })
+
+  it('corrige uma PO ativa que não existe mais', () => {
+    localStorage.setItem('auto-tm-karsten:v1', JSON.stringify({ pos: { demandas: [DEMANDA_EXEMPLO], ativa: 5 } }))
+    expect(carregarEstado().pos?.ativa).toBe(0)
   })
 
   it('ignora dados corrompidos sem quebrar', () => {
@@ -38,7 +48,7 @@ describe('persistência no navegador', () => {
   })
 
   it('limpa o que estava salvo', () => {
-    salvarEstado({ cadastros: CADASTRO_PADRAO, demanda: DEMANDA_EXEMPLO })
+    salvarEstado({ cadastros: CADASTRO_PADRAO, pos: { demandas: [DEMANDA_EXEMPLO], ativa: 0 } })
     limparEstado()
     expect(carregarEstado()).toEqual({})
   })

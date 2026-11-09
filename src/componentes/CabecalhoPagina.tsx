@@ -1,12 +1,16 @@
+import type { ReactNode } from 'react'
+import type { Demanda } from '../dominio/tipos'
+
 interface Props {
   titulo: string
   descricao: string
-  tituloPO: string
-  revisao: string
-  onExportar?: () => void
+  demandas?: Demanda[]
+  ativa?: number
+  onSelecionarPO?: (indice: number) => void
+  acoes?: ReactNode
 }
 
-export function CabecalhoPagina({ titulo, descricao, tituloPO, revisao, onExportar }: Props) {
+export function CabecalhoPagina({ titulo, descricao, demandas, ativa = 0, onSelecionarPO, acoes }: Props) {
   return (
     <div className="cabecalho">
       <div>
@@ -14,14 +18,25 @@ export function CabecalhoPagina({ titulo, descricao, tituloPO, revisao, onExport
         <p>{descricao}</p>
       </div>
       <div className="cabecalho-acoes">
-        <span className="po-atual">
-          {tituloPO || 'PO sem título'} · rev. {revisao || '00'}
-        </span>
-        {onExportar && (
-          <button className="botao primario" onClick={onExportar}>
-            Exportar Excel
-          </button>
+        {demandas && demandas.length > 1 && onSelecionarPO ? (
+          <label className="seletor-po">
+            <span>PO</span>
+            <select value={ativa} onChange={(e) => onSelecionarPO(Number(e.target.value))}>
+              {demandas.map((d, i) => (
+                <option key={i} value={i}>
+                  {d.titulo || 'PO sem título'} · rev. {d.revisao || '00'}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          demandas && (
+            <span className="po-atual">
+              {demandas[ativa]?.titulo || 'PO sem título'} · rev. {demandas[ativa]?.revisao || '00'}
+            </span>
+          )
         )}
+        {acoes}
       </div>
     </div>
   )

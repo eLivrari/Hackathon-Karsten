@@ -649,12 +649,225 @@ tr.em-uso .barra i {
 }
 .cadastros {
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: start;
 }
 .cadastros .bloco {
   margin-bottom: 0;
+}
+
+/* Seletor de PO no cabeçalho */
+.seletor-po {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--texto-2);
+}
+.seletor-po select {
+  height: 36px;
+  max-width: 260px;
+  padding: 0 8px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 3px;
+  background: var(--papel);
+}
+.botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.bloco-titulo {
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.bloco-titulo h2 {
+  margin-bottom: 0;
+}
+.remover {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--texto-3);
+}
+.remover:hover {
+  background: var(--alerta-fundo);
+  color: var(--alerta);
+}
+
+/* Resultado da importação */
+.arquivos-lidos {
+  flex-basis: 100%;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--texto-2);
+  font-size: 13px;
+}
+
+/* Lista de POs abertas */
+.lista-pos td {
+  vertical-align: middle;
+}
+.lista-pos .link {
+  font-weight: 500;
+}
+
+/* Roteiro */
+.passos {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+.passo {
+  display: grid;
+  grid-template-columns: 18px 52px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid var(--linha);
+  border-radius: 3px;
+  background: var(--papel);
+  cursor: grab;
+}
+.passo.fixo {
+  grid-template-columns: 18px 52px minmax(0, 1fr);
+  background: var(--cabecalho-tabela);
+  color: var(--texto-2);
+  cursor: default;
+}
+.passo.arrastando {
+  opacity: 0.45;
+}
+.passo.alvo {
+  border-color: var(--petroleo);
+  box-shadow: inset 0 2px var(--petroleo);
+}
+.passo.erro {
+  border-color: var(--alerta-linha);
+  background: var(--alerta-fundo);
+}
+.passo-alca {
+  color: var(--texto-3);
+}
+.passo-codigo {
+  font-weight: 500;
+}
+.passo-desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.passo-desc .falta {
+  margin-left: 0;
+}
+.passo-freq {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--texto-3);
+}
+.passo-freq input {
+  width: 56px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 3px;
+  background: var(--papel);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.passo-acoes {
+  display: flex;
+  gap: 2px;
+}
+.passo-acoes button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--texto-3);
+}
+.passo-acoes button:hover:not(:disabled) {
+  background: var(--cabecalho-tabela);
+  color: var(--texto);
+}
+.passo-acoes button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.paleta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.chip {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  max-width: 100%;
+  padding: 5px 10px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 3px;
+  background: var(--papel);
+  font-size: 13px;
+  text-align: left;
+}
+.chip:hover {
+  border-color: var(--petroleo);
+  background: var(--petroleo-fundo);
+}
+.chip span {
+  overflow: hidden;
+  max-width: 260px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip em {
+  color: var(--texto-3);
+  font-style: normal;
+}
+
+/* Cadastros */
+.tabela-edicao td {
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+.tabela-edicao input {
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+}
+.tabela-edicao input:hover {
+  border-color: var(--linha);
+}
+.tabela-edicao input:focus {
+  border-color: var(--petroleo);
+  outline: 1px solid var(--petroleo);
+  background: var(--papel);
+}
+.tabela-edicao input.direita {
+  text-align: right;
+}
+.col-codigo {
+  width: 72px;
+}
+.col-numero {
+  width: 116px;
+}
+.col-remover {
+  width: 40px;
+}
+.alerta.sem-margem {
+  margin: 0 0 12px;
 }
 
 /* Telas menores */
@@ -686,6 +899,13 @@ tr.em-uso .barra i {
   .salvo {
     display: none;
   }
+  .passo {
+    grid-template-columns: 14px 44px minmax(0, 1fr) auto;
+  }
+  .passo-acoes {
+    grid-column: 2 / -1;
+    justify-content: flex-end;
+  }
   .pagina {
     padding: 20px 16px 48px;
   }
@@ -705,5 +925,39 @@ tr.em-uso .barra i {
   }
   .celula:nth-child(2n) {
     border-right: 0;
+  }
+}
+
+/* PDF da ficha (impressão) */
+@media print {
+  :root,
+  :root[data-tema='escuro'] {
+    color-scheme: light;
+    --destaque: #005870;
+    --fundo: #fff;
+    --papel: #fff;
+    --cabecalho-tabela: #f3f3f0;
+    --linha: #cfcfc8;
+    --linha-forte: #8f908a;
+    --texto: #000;
+    --texto-2: #333;
+    --texto-3: #555;
+  }
+  .topo,
+  .cabecalho,
+  .aviso,
+  .lateral,
+  .acoes {
+    display: none !important;
+  }
+  .pagina {
+    max-width: none;
+    padding: 0;
+  }
+  .duas-colunas {
+    display: block;
+  }
+  .folha {
+    break-inside: avoid;
   }
 }

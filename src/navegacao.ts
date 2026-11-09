@@ -18,7 +18,7 @@ export const MENU: ItemMenu[] = [
     id: 'ficha',
     label: 'Ficha PO',
     titulo: 'Ficha de processo operacional',
-    descricao: 'Confira os tempos antes de exportar para Excel.',
+    descricao: 'Confira os tempos antes de exportar para Excel, PDF ou JSON.',
   },
   {
     id: 'analise',

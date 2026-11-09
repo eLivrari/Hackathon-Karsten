@@ -62,7 +62,7 @@ export function CampoRoteiro({ roteiro, onChange, onConsultarElementos }: CampoR
 
   return (
     <label className="campo">
-      <span>Sequência de elementos MTM, na ordem de execução</span>
+      <span>Ou digite a sequência</span>
       <input
         value={texto}
         onChange={(e) => {

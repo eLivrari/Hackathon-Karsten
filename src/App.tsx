@@ -3,10 +3,11 @@ import type { ChangeEvent } from 'react'
 import { Aviso } from './componentes/Aviso'
 import { BarraTopo } from './componentes/BarraTopo'
 import { CabecalhoPagina } from './componentes/CabecalhoPagina'
-import { CADASTRO_PADRAO, DEMANDA_EXEMPLO, DEMANDA_VAZIA } from './dominio/cadastroPadrao'
+import { CADASTRO_PADRAO, DEMANDA_EXEMPLO } from './dominio/cadastroPadrao'
 import { gerarFicha, simularMaquinas } from './dominio/calculo'
-import type { Cadastros, Demanda } from './dominio/tipos'
-import { exportarExcel } from './exportacao/excel'
+import type { Cadastros, Demanda, FichaPO } from './dominio/tipos'
+import * as POs from './estado/listaPOs'
+import { baixarJson } from './exportacao/baixar'
 import { lerArquivo, lerConteudoTexto } from './ingestao'
 import { itemDaTela, type Tela } from './navegacao'
 import { carregarEstado, salvarEstado } from './persistencia/armazenamento'
@@ -21,80 +22,98 @@ const FORMATOS_ACEITOS = '.ods,.xlsx,.xls,.txt,.csv,.json'
 function App() {
   const [salvoInicial] = useState(carregarEstado)
   const [cadastros, setCadastros] = useState<Cadastros>(salvoInicial.cadastros ?? CADASTRO_PADRAO)
-  const [demanda, setDemanda] = useState<Demanda>(salvoInicial.demanda ?? DEMANDA_EXEMPLO)
+  const [pos, setPOs] = useState<POs.ListaPOs>(salvoInicial.pos ?? { demandas: [DEMANDA_EXEMPLO], ativa: 0 })
   const [salvo, setSalvo] = useState(true)
   const { tema, alternar: alternarTema } = useTema()
 
   const [tela, setTela] = useState<Tela>('operacao')
-  const [arquivo, setArquivo] = useState('')
+  const [resumoImportacao, setResumoImportacao] = useState<string[]>([])
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
   const inputArquivo = useRef<HTMLInputElement>(null)
 
+  const demanda = POs.poAtiva(pos)
   const ficha = useMemo(() => gerarFicha(demanda, cadastros), [demanda, cadastros])
   const comparativo = useMemo(() => simularMaquinas(demanda, cadastros), [demanda, cadastros])
 
-  // Cada alteração é gravada no navegador; ao recarregar a página, o trabalho volta
   useEffect(() => {
-    setSalvo(salvarEstado({ cadastros, demanda }))
-  }, [cadastros, demanda])
+    setSalvo(salvarEstado({ cadastros, pos }))
+  }, [cadastros, pos])
 
   function avisar(texto: string) {
     setErro('')
     setMensagem(texto)
   }
 
-  function falhar(e: unknown, padrao: string) {
+  function falhar(texto: string) {
     setMensagem('')
-    setErro(e instanceof Error ? e.message : padrao)
+    setErro(texto)
   }
 
   function atualizar<K extends keyof Demanda>(campo: K, valor: Demanda[K]) {
-    setDemanda((atual) => ({ ...atual, [campo]: valor }))
+    setPOs((lista) => POs.atualizarAtiva(lista, { ...POs.poAtiva(lista), [campo]: valor }))
   }
 
-  async function importar(file?: File) {
-    if (!file) return
-    try {
-      const leitura = await lerArquivo(file)
-      const temCadastros = leitura.elementos.length > 0 || leitura.maquinas.length > 0
-      if (temCadastros) {
-        setCadastros((atual) => ({
-          elementos: leitura.elementos.length ? leitura.elementos : atual.elementos,
-          maquinas: leitura.maquinas.length ? leitura.maquinas : atual.maquinas,
-        }))
-      }
+  function abrirPOs(novas: Demanda[]) {
+    setPOs((lista) => POs.adicionar(lista, novas))
+  }
 
-      if (leitura.demandas.length) {
-        setDemanda(leitura.demandas[0])
-        avisar(`${leitura.demandas.length} demanda(s) encontrada(s). A primeira foi carregada para edição.`)
-      } else if (temCadastros) {
-        avisar('Cadastros carregados e prontos para uso.')
-      } else {
-        falhar(null, 'Não encontrei dados reconhecíveis nesse arquivo. Confira o formato e os cabeçalhos.')
+  async function importar(arquivos: File[]) {
+    if (arquivos.length === 0) return
+    const resumo: string[] = []
+    const novas: Demanda[] = []
+    let novoCadastro = cadastros
+    let falhas = 0
+
+    for (const arquivo of arquivos) {
+      try {
+        const leitura = await lerArquivo(arquivo)
+        const partes: string[] = []
+        if (leitura.elementos.length) {
+          novoCadastro = { ...novoCadastro, elementos: leitura.elementos }
+          partes.push(`${leitura.elementos.length} elementos MTM`)
+        }
+        if (leitura.maquinas.length) {
+          novoCadastro = { ...novoCadastro, maquinas: leitura.maquinas }
+          partes.push(`${leitura.maquinas.length} máquinas`)
+        }
+        if (leitura.demandas.length) partes.push(`${leitura.demandas.length} PO(s)`)
+        novas.push(...leitura.demandas)
+        if (partes.length === 0) falhas++
+        resumo.push(`${arquivo.name}: ${partes.join(', ') || 'nada reconhecido'}`)
+      } catch (e) {
+        falhas++
+        resumo.push(`${arquivo.name}: ${e instanceof Error ? e.message : 'não foi possível ler'}`)
       }
-      setArquivo(file.name)
-    } catch (e) {
-      falhar(e, 'Não foi possível ler o arquivo.')
+    }
+
+    setCadastros(novoCadastro)
+    abrirPOs(novas)
+    setResumoImportacao(resumo)
+    const lidos = arquivos.length - falhas
+    if (lidos === 0) falhar('Nenhum arquivo foi reconhecido. Confira o formato e os cabeçalhos.')
+    else {
+      const extra = novas.length ? ` ${novas.length} PO(s) aberta(s).` : ''
+      avisar(`${lidos} de ${arquivos.length} arquivo(s) lido(s).${extra}`)
     }
   }
 
-  function aoEscolherArquivo(e: ChangeEvent<HTMLInputElement>) {
-    void importar(e.target.files?.[0])
+  function aoEscolherArquivos(e: ChangeEvent<HTMLInputElement>) {
+    void importar([...(e.target.files ?? [])])
     e.target.value = '' // permite escolher o mesmo arquivo de novo
   }
 
   function lerTexto(texto: string) {
     try {
-      const demandas = lerConteudoTexto(texto)
-      if (!demandas.length) {
-        falhar(null, 'Não encontrei uma demanda completa. Inclua pelo menos o perímetro ou o roteiro.')
+      const novas = lerConteudoTexto(texto)
+      if (!novas.length) {
+        falhar('Não encontrei uma demanda completa. Inclua pelo menos o perímetro ou o roteiro.')
         return
       }
-      setDemanda(demandas[0])
-      avisar(`${demandas.length} demanda(s) lida(s). A primeira está pronta para revisar.`)
+      abrirPOs(novas)
+      avisar(`${novas.length} PO(s) lida(s).`)
     } catch (e) {
-      falhar(e, 'Confira o texto informado.')
+      falhar(e instanceof Error ? e.message : 'Confira o texto informado.')
     }
   }
 
@@ -104,9 +123,34 @@ function App() {
     setErro('')
   }
 
-  const exportar = () => void exportarExcel([ficha], cadastros)
-  const selecionarArquivo = () => inputArquivo.current?.click()
+  // exceljs é pesado, só carrega na hora de exportar
+  async function exportarExcel(fichas: FichaPO[]) {
+    try {
+      const { exportarExcel } = await import('./exportacao/excel')
+      await exportarExcel(fichas, cadastros)
+    } catch {
+      falhar('Não foi possível gerar o Excel.')
+    }
+  }
+
+  const exportarTodas = () => void exportarExcel(pos.demandas.map((d) => gerarFicha(d, cadastros)))
+  const selecionarArquivos = () => inputArquivo.current?.click()
+  const selecionarPO = (indice: number) => setPOs((lista) => POs.selecionar(lista, indice))
   const itemAtual = itemDaTela(tela)
+
+  const acoesFicha = (
+    <>
+      <button className="botao" onClick={() => window.print()} title="Salvar como PDF na janela de impressão">
+        PDF
+      </button>
+      <button className="botao" onClick={() => baixarJson(demanda, `${demanda.titulo || 'PO'}.json`)}>
+        JSON
+      </button>
+      <button className="botao primario" onClick={() => void exportarExcel([ficha])}>
+        Exportar Excel
+      </button>
+    </>
+  )
 
   return (
     <>
@@ -116,9 +160,10 @@ function App() {
         <CabecalhoPagina
           titulo={itemAtual.titulo}
           descricao={itemAtual.descricao}
-          tituloPO={demanda.titulo}
-          revisao={demanda.revisao}
-          onExportar={tela === 'ficha' ? exportar : undefined}
+          demandas={tela === 'cadastros' ? undefined : pos.demandas}
+          ativa={pos.ativa}
+          onSelecionarPO={selecionarPO}
+          acoes={tela === 'ficha' ? acoesFicha : undefined}
         />
 
         <Aviso
@@ -129,22 +174,30 @@ function App() {
             setErro('')
           }}
         />
-        <input ref={inputArquivo} type="file" accept={FORMATOS_ACEITOS} hidden onChange={aoEscolherArquivo} />
+        <input ref={inputArquivo} type="file" accept={FORMATOS_ACEITOS} multiple hidden onChange={aoEscolherArquivos} />
 
         {tela === 'operacao' && (
           <TelaOperacao
-            demanda={demanda}
+            demandas={pos.demandas}
+            ativa={pos.ativa}
             cadastros={cadastros}
             ficha={ficha}
-            arquivo={arquivo}
+            resumoImportacao={resumoImportacao}
             onAtualizar={atualizar}
-            onSelecionarArquivo={selecionarArquivo}
-            onSoltarArquivo={(file) => void importar(file)}
+            onSelecionarArquivos={selecionarArquivos}
+            onSoltarArquivos={(arquivos) => void importar(arquivos)}
             onLerTexto={lerTexto}
-            onNovaOperacao={() => {
-              setDemanda(structuredClone(DEMANDA_VAZIA))
-              avisar('Nova operação iniciada.')
+            onCarregarExemplo={() => {
+              abrirPOs([structuredClone(DEMANDA_EXEMPLO)])
+              avisar('PO-SL-001 aberta.')
             }}
+            onSelecionarPO={selecionarPO}
+            onRemoverPO={(indice) => setPOs((lista) => POs.remover(lista, indice))}
+            onNovaPO={() => {
+              setPOs(POs.novaPO)
+              avisar('Nova PO criada.')
+            }}
+            onExportarTodas={exportarTodas}
             onGerarFicha={() => trocarTela('ficha')}
             onConsultarCadastros={() => trocarTela('cadastros')}
           />
@@ -152,11 +205,18 @@ function App() {
         {tela === 'ficha' && (
           <TelaFicha ficha={ficha} onEditar={() => trocarTela('operacao')} onAnalisar={() => trocarTela('analise')} />
         )}
-        {tela === 'analise' && <TelaAnalise comparativo={comparativo} ficha={ficha} />}
+        {tela === 'analise' && (
+          <TelaAnalise
+            comparativo={comparativo}
+            ficha={ficha}
+            onTrocarMaquina={(codigo) => atualizar('codigoMaquina', codigo)}
+          />
+        )}
         {tela === 'cadastros' && (
           <TelaCadastros
             cadastros={cadastros}
-            onImportar={selecionarArquivo}
+            onChange={setCadastros}
+            onImportar={selecionarArquivos}
             onRestaurarPadrao={() => {
               setCadastros(CADASTRO_PADRAO)
               avisar('Cadastros restaurados para a planilha de referência do kit.')

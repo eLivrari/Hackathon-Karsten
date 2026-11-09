@@ -7,9 +7,10 @@ type Comparativo = ReturnType<typeof simularMaquinas>
 interface Props {
   comparativo: Comparativo
   ficha: FichaPO
+  onTrocarMaquina: (codigo: string) => void
 }
 
-export function TelaAnalise({ comparativo, ficha }: Props) {
+export function TelaAnalise({ comparativo, ficha, onTrocarMaquina }: Props) {
   const { demanda } = ficha
   const maisRapida = comparativo.length ? Math.min(...comparativo.map((m) => m.tempoTotal)) : 0
   const maisLenta = Math.max(...comparativo.map((m) => m.tempoTotal), 0.01)
@@ -33,6 +34,7 @@ export function TelaAnalise({ comparativo, ficha }: Props) {
               <th className="direita">Peças/h</th>
               <th className="direita">Diferença</th>
               <th className="coluna-barra" aria-hidden />
+              <th aria-label="Ações" />
             </tr>
           </thead>
           <tbody>
@@ -60,6 +62,13 @@ export function TelaAnalise({ comparativo, ficha }: Props) {
                       <i style={{ width: `${(tempoTotal / maisLenta) * 100}%` }} />
                     </div>
                   </td>
+                  <td className="direita">
+                    {maquina.codigo !== demanda.codigoMaquina && (
+                      <button className="link" onClick={() => onTrocarMaquina(maquina.codigo)}>
+                        Usar esta
+                      </button>
+                    )}
+                  </td>
                 </tr>
               )
             })}
@@ -68,8 +77,7 @@ export function TelaAnalise({ comparativo, ficha }: Props) {
       </div>
 
       <p className="nota">
-        Só o tempo de costura muda de uma máquina para outra; os movimentos manuais ficam iguais. A coluna Diferença
-        mostra quantas peças por hora a mais (ou a menos) cada máquina faria em relação à que está em uso.
+        Só o tempo de costura muda entre as máquinas. Diferença = peças/h a mais ou a menos que a máquina em uso.
       </p>
     </section>
   )
